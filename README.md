@@ -92,7 +92,7 @@ class UserController
 
     protected $maps;
 
-    public function __construct(UserRepository $user, Post $post, Maps $maps)
+    public function __construct(UserRepository $user, Maps $maps)
     {
         $this->user = $user;
         $this->maps = $maps;
@@ -138,7 +138,7 @@ class Performance extends Model
 {
     public function revenue()
     {
-        return new Revenue($this->revenue); // ex: 8800
+        return new Revenue($this->revenue);
     }
 }
 
@@ -153,12 +153,12 @@ class Revenue
 
     public function inDollars()
     {
-        return $this->revenue / 100; // ex: 88
+        return $this->revenue / 100;
     }
 
     public function asCurrency()
     {
-        return money_format('$%i', $this->inDollars()); // $88.00
+        return money_format('$%i', $this->inDollars());
     }
 
     public function __toString()
