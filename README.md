@@ -167,3 +167,111 @@ class Revenue
     }
 }
 ```
+
+### Shaping Laravel Codes
+- Consider Form Objects ([Request](https://laravel.com/docs/validation#form-request-validation))
+- Consider Use Cases ([Jobs](https://laravel.com/docs/queues))
+- Consider Domain Events ([Events](https://laravel.com/docs/events))
+- Consider to use [Traits](http://php.net/manual/en/language.oop5.traits.php)
+- Consider to use Value Objects (see rule: Wrap Primitives)
+- Consider [Policies](https://laravel.com/docs/5.3/authorization)
+- Consider splitting tasks into steps
+    - Create new classes that have same contracts
+    - Create an array of previous created classes
+    - Run the method in each class
+```php
+class Doku
+{
+    public function register($user)
+    {
+        //
+    }
+}
+
+class Uber
+{
+    public function register($user)
+    {
+        //
+    }
+}
+
+class Register
+{
+    protected $registers = [
+        Doku::class,
+        Uber::class,
+    ];
+
+    public function register($data)
+    {
+        $user = User::create($data);
+
+        foreach ($this->registers as $register) {
+            $register = new $register;
+            $register->register($user);
+        }
+    }
+}
+```
+- Consider Strategizing
+Same like above, but only delegate a task to proper class. Steps:
+    - Identify a point of flexibility
+    - Extract each strategy into its own class
+    - Ensure that each of those strategies adheres to a common contracts / interfaces
+    - Determine the proper strategy, and let it handle the task
+```php
+class Doku
+{
+    protected $request;
+
+    public function __construct(Request $request)
+    {
+        //
+    }
+
+    public function register()
+    {
+        //
+    }
+}
+
+class Uber
+{
+    protected $request;
+
+    public function __construct(Request $request)
+    {
+        //
+    }
+
+    public function register()
+    {
+        //
+    }
+}
+
+class UserController
+{
+    public function store(Request $request)
+    {
+        $register = $this->getRegistrationStrategy($request);
+        $register->register();
+    }
+
+    protected function getRegistrationStrategy(Request $request)
+    {
+        $type = $request->input('type');
+
+        if ('doku' == $type) {
+            return new Doku($request);
+        }
+
+        if ('uber' == $type) {
+            return new Uber($request);
+        }
+
+        throw new DomainException("Invalid type [{$type}]");
+    }
+}
+```
